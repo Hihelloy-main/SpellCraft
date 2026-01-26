@@ -1,0 +1,87 @@
+# SpellCraft Configuration File
+
+# Magic System Settings
+magic:
+  max: 100
+  regen-amount: 2
+  regen-interval: 40
+  update-interval: 10
+
+# SpellBook Settings
+spellbook:
+  craftable: true        # Can players craft SpellBooks
+  world-generation: true # Should SpellBooks appear in chests
+  consume-on-use: true   # Should SpellBooks be consumed when used
+  chance-per-chest: 10   # % chance for a chest to contain a SpellBook
+  max-books-per-chest: 1 # Max SpellBooks per chest spawn
+
+# Spell Casting Settings
+spell-casting:
+  require-empty-hand: true
+  sneak-to-cast: true
+  particle-effects: true
+  sound-effects: true
+
+# Cooldown Display Settings
+cooldown:
+  show-remaining-time: true
+  actionbar-messages: true
+
+# Spell-Specific Settings
+spells:
+  fireball:
+    enabled: true
+    magic-cost: 30
+    cooldown: 5000
+    range: 50.0
+    explosion-power: 2.0
+    speed: 1.5
+
+  flamethrower:
+    magic-cost: 30
+    cooldown: 5000   # milliseconds
+    range: 50.0
+    damage: 2.0
+    particle-range: 0.6
+    enabled: true
+    particles: 30
+
+  heal:
+    enabled: true
+    magic-cost: 40
+    cooldown: 10000
+    heal-amount: 10.0
+    remove-effects: true
+
+  teleport:
+    enabled: true
+    magic-cost: 50
+    cooldown: 15000
+    range: 30.0
+
+  lightning:
+    enabled: true
+    magic-cost: 35
+    cooldown: 8000
+    range: 40.0
+
+  shield:
+    enabled: true
+    magic-cost: 25
+    cooldown: 12000
+    duration: 200
+
+# UI Settings
+ui:
+  show-magic-bar: true
+  show-spell-info: true
+  color-scheme:
+    magic: "AQUA"
+    success: "GREEN"
+    error: "RED"
+    info: "YELLOW"
+
+# Debug Settings
+debug:
+  enabled: false
+  verbose-logging: false
