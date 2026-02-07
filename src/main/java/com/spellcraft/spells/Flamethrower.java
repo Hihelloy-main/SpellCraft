@@ -36,43 +36,60 @@ public class Flamethrower extends AbstractSpell {
     @Override
     protected SpellResult execute(SpellCaster caster) {
         Player player = caster.getPlayer();
-        playerloc = player.getLocation();
 
-        Location origin = player.getEyeLocation();
-        var direction = origin.getDirection().normalize();
-
+        double maxRange = getRange();
+        double step = 0.6;
+        double hitRadius = SpellCraftPlugin.getInstance().getConfig()
+                .getDouble("spells.flamethrower.hit-radius", 1.2);
         double damage = SpellCraftPlugin.getInstance().getConfig()
                 .getDouble("spells.flamethrower.damage", 2.0);
-        double particleRange = SpellCraftPlugin.getInstance().getConfig()
-                .getDouble("spells.flamethrower.particle-range", 0.6);
+        int fireTicks = SpellCraftPlugin.getInstance().getConfig()
+                .getInt("spells.flamethrower.fire-ticks", 40);
 
-        ThreadUtil.ensureLocationTimer(origin, () -> {
+        int maxDurationTicks = SpellCraftPlugin.getInstance().getConfig()
+                .getInt("spells.flamethrower.duration-ticks", 60); // 3 seconds default
 
-            // Always spawn flame forward
-            Location point = origin.clone().add(direction.clone().multiply(1.2));
-            pointloc = point;
+        final int[] livedTicks = {0};
 
-            // Visuals ALWAYS happen
-            ParticleEffect.FLAME.display(point, 20);
+        ThreadUtil.ensureLocationTimer(player.getEyeLocation(), () -> {
 
-            // Damage ONLY if something is inside
-            point.getWorld().getNearbyEntities(point, particleRange, particleRange, particleRange)
-                    .forEach(entity -> {
-                        if (!(entity instanceof LivingEntity living)) return;
-                        if (!DamageHandler.isValidTarget(player, living)) return;
+            // STOP CONDITIONS
+            if (!player.isOnline() || player.isDead() || !player.isSneaking()) {
+                remove();
+                return;
+            }
 
-                        DamageHandler.damage(
-                                player,
-                                living,
-                                damage,
-                                getName(),
-                                getElement()
-                        );
-                    });
+            if (livedTicks[0]++ > maxDurationTicks) {
+                remove();
+                return;
+            }
 
-        }, 1, 1);
+            Location eye = player.getEyeLocation();
+            var dir = eye.getDirection().normalize();
+            playerloc = player.getLocation();
 
-        // Never fail due to missing target
+            for (double d = 0; d < maxRange; d += step) {
+                Location point = eye.clone().add(dir.clone().multiply(d));
+                pointloc = point;
+
+                if (point.getBlock().getType().isSolid()) break;
+
+                ParticleEffect.FLAME.display(point, 2);
+                ParticleEffect.SMOKE_NORMAL.display(point, 1);
+
+                point.getWorld().getNearbyEntities(point, hitRadius, hitRadius, hitRadius)
+                        .forEach(entity -> {
+                            if (!(entity instanceof LivingEntity living)) return;
+                            if (living.equals(player)) return;
+                            if (!DamageHandler.isValidTarget(player, living)) return;
+
+                            DamageHandler.damage(player, living, damage, getName(), getElement());
+                            living.setFireTicks(Math.max(living.getFireTicks(), fireTicks));
+                        });
+            }
+
+        }, 0, 1);
+
         return SpellResult.SUCCESS;
     }
 

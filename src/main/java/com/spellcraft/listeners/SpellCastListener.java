@@ -14,7 +14,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,6 +21,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 public class SpellCastListener implements Listener {
 
@@ -44,13 +44,51 @@ public class SpellCastListener implements Listener {
 
         if (spell == null) return;
 
+        // Skip sneak-channel spells here
+        if (spell.getAbilityActivationAction() == null) return;
+
+        if (event.getAction() != spell.getAbilityActivationAction()) return;
+        if (player.getInventory().getItemInMainHand().getType() != Material.AIR) return;
+
+        if (!canCastHere(player, caster, spell)) return;
+
+        event.setCancelled(true);
+
+        handleCastResult(player, caster, spell);
+    }
+
+
+    @EventHandler
+    public void onSneakStart(PlayerToggleSneakEvent event) {
+        if (!event.isSneaking()) return; // Only when starting sneak
+
+        Player player = event.getPlayer();
+        SpellCaster caster = casterManager.getCaster(player);
+
+        int slot = player.getInventory().getHeldItemSlot();
+        Spell spell = caster.getSpellAtSlot(slot);
+
+        if (spell == null) return;
+
+        // Only handle sneak-based spells
+        if (spell.getAbilityActivationAction() != null) return;
+
+        // if (player.getInventory().getItemInMainHand().getType() != Material.AIR) return;
+
+        if (!canCastHere(player, caster, spell)) return;
+
+        handleCastResult(player, caster, spell);
+    }
+
+
+    private boolean canCastHere(Player player, SpellCaster caster, Spell spell) {
         House house = caster.getHouse();
         MagicElement element = spell.getElement();
 
         if (house != null && element != null && !HouseUtil.canUse(house, element)) {
             SpellCraftPlugin.getAdventure().player(player)
                     .sendActionBar(Component.text("Your house cannot use this magic", NamedTextColor.RED));
-            return;
+            return false;
         }
 
         if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null) {
@@ -60,7 +98,7 @@ public class SpellCastListener implements Listener {
                                 .append(Component.text(spell.getName(), NamedTextColor.AQUA))
                                 .append(Component.text(" here (WorldGuard)", NamedTextColor.RED))
                 );
-                return;
+                return false;
             }
         }
 
@@ -70,25 +108,21 @@ public class SpellCastListener implements Listener {
                             .append(Component.text(spell.getName(), spell.getElement().getColor()))
                             .append(Component.text(" here (Claimed land)", NamedTextColor.RED))
             );
-            return;
+            return false;
         }
 
-        Action activationAction = spell.getAbilityActivationAction();
+        return true;
+    }
 
-        if (activationAction != null) {
-            if (event.getAction() != activationAction) return;
-        } else {
-            // Null action = sneak-based ability
-            if (!player.isSneaking()) return;
-        }
 
-        if (player.getInventory().getItemInMainHand().getType() != Material.AIR) return;
-
-        event.setCancelled(true);
-
+    private void handleCastResult(Player player, SpellCaster caster, Spell spell) {
         SpellResult result = caster.castSpell(spell);
 
         switch (result) {
+            case SUCCESS -> SpellCraftPlugin.getAdventure().player(player)
+                    .sendMessage(Component.text("Cast: ", NamedTextColor.GREEN)
+                            .append(Component.text(spell.getName() + "!", NamedTextColor.YELLOW)));
+
             case INSUFFICIENT_MAGIC -> {
                 int cost = plugin.getPerkManager().modifyMagicCost(caster, spell);
                 SpellCraftPlugin.getAdventure().player(player)
@@ -111,17 +145,11 @@ public class SpellCastListener implements Listener {
                     SpellCraftPlugin.getAdventure().player(player)
                             .sendMessage(Component.text("Invalid target for this spell!", NamedTextColor.RED));
 
-            case SUCCESS ->
-                    SpellCraftPlugin.getAdventure().player(player)
-                            .sendMessage(Component.text("Cast: ", NamedTextColor.GREEN)
-                                    .append(Component.text(spell.getName() + "!", NamedTextColor.YELLOW)));
-
             default ->
                     SpellCraftPlugin.getAdventure().player(player)
                             .sendMessage(Component.text("Failed to cast spell!", NamedTextColor.RED));
         }
     }
-
 
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
@@ -142,10 +170,8 @@ public class SpellCastListener implements Listener {
                         Component.text(spell.getName(), NamedTextColor.AQUA)
                                 .decorate(TextDecoration.BOLD));
 
-                SpellCraftPlugin.getAdventure().player(player).sendMessage(
-                        Component.text(spell.getDescription(), NamedTextColor.GRAY)
-                );
-
+                SpellCraftPlugin.getAdventure().player(player)
+                        .sendMessage(Component.text(spell.getDescription(), NamedTextColor.GRAY));
 
                 SpellCraftPlugin.getAdventure().player(player).sendMessage(
                         Component.text("Magic: ", NamedTextColor.YELLOW)
@@ -154,9 +180,8 @@ public class SpellCastListener implements Listener {
                                 .append(Component.text(cooldown + "s", NamedTextColor.AQUA))
                 );
             } else {
-                SpellCraftPlugin.getAdventure().player(player).sendMessage(
-                        Component.text("No spell bound to slot " + (slot + 1), NamedTextColor.RED)
-                );
+                SpellCraftPlugin.getAdventure().player(player)
+                        .sendMessage(Component.text("No spell bound to slot " + (slot + 1), NamedTextColor.RED));
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.spellcraft.util;
 
+import com.spellcraft.api.Spell;
 import com.spellcraft.api.event.SpellPlayerDamageEvent;
 import com.spellcraft.api.magic.MagicElement;
 import org.bukkit.Bukkit;
@@ -49,6 +50,16 @@ public final class DamageHandler {
         }
 
         target.damage(damage, caster);
+    }
+
+    public static void damage(
+            Player caster,
+            LivingEntity target,
+            double damage,
+            Spell spell,
+            MagicElement element
+    ) {
+        damage(caster, target, damage, spell.getName(), element);
     }
 
     /**
