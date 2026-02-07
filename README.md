@@ -25,12 +25,9 @@ SpellCraft is designed to be **addon-first**, **thread-safe**, and **easy to ext
 
 1. Drop `SpellCraft.jar` into your server’s `plugins/` folder  
 2. Start the server once to generate configs:
-
 ```
-
 plugins/SpellCraft/config.yml
 plugins/SpellCraft/perks.yml
-
 ````
 
 3. Configure values as desired
