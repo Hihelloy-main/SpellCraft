@@ -114,7 +114,7 @@ public class PlayerListener implements Listener {
                 ))
                 .build();
 
-        Bukkit.getServer().sendMessage(message);
-        Bukkit.getConsoleSender().sendMessage(message);
+        SpellCraftPlugin.getAdventure().server(Bukkit.getServer().getName()).sendMessage(message);
+        SpellCraftPlugin.getAdventure().sender(Bukkit.getConsoleSender()).sendMessage(message);
     }
 }
