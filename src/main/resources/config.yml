@@ -37,6 +37,24 @@ spells:
     explosion-power: 2.0
     speed: 1.5
 
+  airjets:
+    enabled: true
+    magic-cost: 30
+    cooldown: 7000
+    range: 100.0
+    speed: 1.5
+
+  spells:
+    earthkick:
+      enabled: true
+      magic-cost: 25
+      cooldown: 4000
+      damage: 6.0
+      max-blocks: 4
+      lava-multiplier: 1.5
+      duration: 2500
+
+
   aqua-missile:
     enabled: true
     magic-cost: 35

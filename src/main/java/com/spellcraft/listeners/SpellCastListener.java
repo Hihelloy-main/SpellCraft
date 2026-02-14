@@ -119,9 +119,7 @@ public class SpellCastListener implements Listener {
         SpellResult result = caster.castSpell(spell);
 
         switch (result) {
-            case SUCCESS -> SpellCraftPlugin.getAdventure().player(player)
-                    .sendMessage(Component.text("Cast: ", NamedTextColor.GREEN)
-                            .append(Component.text(spell.getName() + "!", NamedTextColor.YELLOW)));
+            case SUCCESS -> {}
 
             case INSUFFICIENT_MAGIC -> {
                 int cost = plugin.getPerkManager().modifyMagicCost(caster, spell);
