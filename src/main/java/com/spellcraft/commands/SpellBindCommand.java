@@ -97,6 +97,13 @@ public class SpellBindCommand implements CommandExecutor, TabCompleter {
 
         Spell spell = spellOpt.get();
 
+        if (!player.hasPermission(spell.getPermission())) {
+            SpellCraftPlugin.getAdventure().player(player)
+                    .sendMessage(Component.text("You do not have permission to bind this spell.", NamedTextColor.RED));
+            return true;
+        }
+
+
         if (!caster.hasLearnedSpell(spell)) {
             SpellCraftPlugin.getAdventure().player(player).sendMessage(Component.text("You haven't learned this spell yet!")
                     .color(NamedTextColor.RED));
@@ -106,6 +113,18 @@ public class SpellBindCommand implements CommandExecutor, TabCompleter {
         }
 
         MagicElement element = spell.getElement();
+
+        if (element != null) {
+
+            String elementPerm = "spellcraft.element." + element.getName().toLowerCase();
+
+            if (!player.hasPermission(elementPerm)){
+                SpellCraftPlugin.getAdventure().player(player)
+                        .sendMessage(Component.text("You do not have permission to use this element.", NamedTextColor.RED));
+                return true;
+            }
+
+        }
         if (element != null && !HouseUtil.canUse(house, element)) {
             SpellCraftPlugin.getAdventure().player(player).sendMessage(Component.text("Your house cannot bind this type of magic!")
                     .color(NamedTextColor.RED));

@@ -235,7 +235,6 @@ public class SpellCasterImpl implements SpellCaster {
         consumeMagic(pre.getMagicCost());
 
         // apply cooldown AFTER success
-        setCooldown(spell, spell.getCooldown());
 
         Bukkit.getPluginManager().callEvent(new SpellCastEvent(this, spell));
 

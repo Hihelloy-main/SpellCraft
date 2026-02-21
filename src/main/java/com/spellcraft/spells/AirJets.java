@@ -6,6 +6,7 @@ import com.spellcraft.api.SpellCategory;
 import com.spellcraft.api.SpellResult;
 import com.spellcraft.api.magic.MagicElement;
 import com.spellcraft.core.AbstractSpell;
+import com.spellcraft.util.HouseUtil;
 import com.spellcraft.util.ParticleEffect;
 import com.spellcraft.util.ThreadUtil;
 import org.bukkit.Location;
@@ -44,7 +45,7 @@ public class AirJets extends AbstractSpell {
 
         ThreadUtil.ensureLocationTimer(start, () -> {
 
-            if (!player.isOnline() || player.isDead()) {
+            if (!player.isOnline() || player.isDead() || !HouseUtil.canUse(caster.getHouse(), getElement())) {
                 remove();
                 return;
             }

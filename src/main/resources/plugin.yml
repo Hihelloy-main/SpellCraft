@@ -6,79 +6,67 @@ folia-supported: true
 soft-depend: [WorldGuard, GriefPrevention]
 author: Hihelloy
 description: A comprehensive magic based spell system for Minecraft
+
 libraries:
   - net.kyori:adventure-api:4.26.1
   - net.kyori:adventure-platform-bukkit:4.4.1
+
 commands:
   spell:
     description: Main SpellCraft command
     usage: /<command> <subcommand>
-    aliases: [sc, spells, s]
+    aliases: [sc,spells,s]
     permission: spellcraft.command.spell
+
   spellbook:
     description: SpellBook management command
     usage: /<command> <create|give> [player] [spell]
     permission: spellcraft.command.spellbook
+
   spellbind:
     description: Bind a spell to a slot
     usage: /<command> <slot> <spell>
     permission: spellcraft.command.spellbind
+
   house:
     description: Choose your magical house
     usage: /<command> <choose> [house]
     permission: spellcraft.command.house
-permissions:
-  spellcraft.*:
-    description: Grants all SpellCraft permissions
-    default: op
-    children:
-      spellcraft.command.*: true
-      spellcraft.spell.*: true
-      spellcraft.spellbook.*: true
 
-  spellcraft.command.*:
-    description: Grants all command permissions
-    default: op
-    children:
-      spellcraft.command.spell: true
-      spellcraft.command.spellbook: true
-      spellcraft.command.spellbind: true
-      spellcraft.command.reload: true
-      spellcraft.command.house: true
+permissions:
 
   spellcraft.command.spell:
-    description: Allows using /spell command
+    default: true
+
+  spellcraft.command.spellbind:
+    default: true
+
+  spellcraft.command.house:
     default: true
 
   spellcraft.command.spellbook:
-    description: Allows using /spellbook command
     default: op
 
-  spellcraft.command.spellbind:
-    description: Allows using /spellbind command
+  spellcraft.spell.cast:
     default: true
-
-  spellcraft.command.reload:
-    description: Allows reloading the plugin
-    default: op
-
-  spellcraft.admin.reload:
-    description: Allows reloading the plugin in /spell
-    default: op
 
   spellcraft.spell.*:
-    description: Grants access to all spells
-    default: false
-    children:
-      spellcraft.spell.fireball: true
-      spellcraft.spell.heal: true
-      spellcraft.spell.teleport: true
-      spellcraft.spell.lightning: true
-      spellcraft.spell.shield: true
-
-  spellcraft.spellbook.*:
-    description: Grants all spellbook permissions
     default: true
-    children:
-      spellcraft.spellbook.use: true
-      spellcraft.spellbook.craft: true
+
+  spellcraft.element.*:
+    default: true
+
+  spellcraft.house.*:
+    default: true
+
+  spellcraft.spellbook.use:
+    default: true
+
+  spellcraft.spellbook.craft:
+    default: true
+
+  spellcraft.spellbook.give:
+    default: op
+
+  spellcraft.admin.*:
+    default: op

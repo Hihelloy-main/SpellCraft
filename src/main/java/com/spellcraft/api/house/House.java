@@ -173,6 +173,21 @@ public final class House {
     }
 
     /**
+     * @return The permission node of this House as a {@link String}
+     */
+    public String getPermission(){
+        return "spellcraft.house." + name.toLowerCase();
+    }
+
+    /**
+     * @param caster The caster that might have this house's permission.
+     * @return A {@link Boolean} representing whether the caster has this house's permission.
+     */
+    public boolean hasPermission(SpellCaster caster) {
+        return caster.getPlayer().hasPermission(getPermission());
+    }
+
+    /**
      * Creates and registers a custom {@link House}.
      *
      * @param name           the unique internal name of the house.

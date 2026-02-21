@@ -39,18 +39,30 @@ public class HouseCommand implements CommandExecutor, TabCompleter {
             case "choose" -> {
 
                 if (args.length < 2) {
-                    SpellCraftPlugin.getAdventure().player(player).sendMessage(Component.text("Choose a house!", NamedTextColor.RED));
+                    SpellCraftPlugin.getAdventure().player(player)
+                            .sendMessage(Component.text("Choose a house!", NamedTextColor.RED));
                     return true;
                 }
 
-                try {
-                    House house = House.of(args[1].toUpperCase());
-                    caster.setHouse(house);
+                House house = House.of(args[1]);
 
-                    SpellCraftPlugin.getAdventure().player(player).sendMessage(Component.text("You have joined ").append(Component.text(house.getName()).color(house.getPrimaryColor())));
-                } catch (IllegalArgumentException e) {
-                    SpellCraftPlugin.getAdventure().player(player).sendMessage(Component.text("Invalid house.", NamedTextColor.RED));
+                if (house == null) {
+                    SpellCraftPlugin.getAdventure().player(player)
+                            .sendMessage(Component.text("Invalid house.", NamedTextColor.RED));
+                    return true;
                 }
+
+                if (!player.hasPermission(house.getPermission())) {
+                    SpellCraftPlugin.getAdventure().player(player)
+                            .sendMessage(Component.text("You do not have permission to join this house.", NamedTextColor.RED));
+                    return true;
+                }
+
+                caster.setHouse(house);
+
+                SpellCraftPlugin.getAdventure().player(player)
+                        .sendMessage(Component.text("You have joined ")
+                                .append(Component.text(house.getName()).color(house.getPrimaryColor())));
             }
 
             case "info" -> {

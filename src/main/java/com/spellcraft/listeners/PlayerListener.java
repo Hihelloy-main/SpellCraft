@@ -21,100 +21,204 @@ public class PlayerListener implements Listener {
 
     private final SpellCasterManager casterManager;
     private final SpellCraftPlugin plugin;
+    private int currentplayerslot;
 
     public PlayerListener(SpellCraftPlugin plugin, SpellCasterManager casterManager) {
+
         this.plugin = plugin;
         this.casterManager = casterManager;
+
+        ThreadUtil.runGlobalTimer(() -> {
+
+            for (Player player : Bukkit.getOnlinePlayers()) {
+
+                SpellCaster caster = casterManager.getCasterIfLoaded(player.getUniqueId());
+
+                if (caster == null) {
+
+                    SpellCraftPlugin.getAdventure().player(player).sendActionBar(Component.empty());
+                    continue;
+
+                }
+
+                Spell spell = caster.getSpellAtSlot(player.getInventory().getHeldItemSlot());
+
+                if (spell == null) {
+
+                    SpellCraftPlugin.getAdventure().player(player).sendActionBar(Component.empty());
+                    continue;
+
+                }
+
+                var element = spell.getElement();
+                var color = element != null ? element.getColor() : NamedTextColor.WHITE;
+
+                long remaining = caster.getRemainingCooldown(spell);
+
+                String text;
+
+                if (remaining > 0) {
+
+                    double seconds = remaining / 1000.0;
+                    text = spell.getName() + " - " + String.format("%.1fs", seconds);
+
+                } else {
+
+                    text = spell.getName();
+
+                }
+
+                SpellCraftPlugin.getAdventure().player(player)
+                        .sendActionBar(Component.text(text).color(color));
+
+            }
+
+        },0L,2L);
+
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+
         Player player = event.getPlayer();
 
         SpellCaster caster = casterManager.getCaster(player);
+
         plugin.getLogger().info("SpellCaster for " + player.getName() + " loaded!");
 
         ThreadUtil.runGlobalTimer(() -> {
-            if (plugin.getConfig().getBoolean("ui.show-magic-bar", true)) {
+
+            if (plugin.getConfig().getBoolean("ui.show-magic-bar",true)) {
+
                 plugin.getMagicBar().showForPlayer(player);
+
             }
-        }, 20L, 100L);
+
+        },20L,100L);
 
         ThreadUtil.runGlobalLater(() -> {
+
             if (!caster.hasHouse()) {
+
                 SpellCraftPlugin.getAdventure().player(player).sendMessage(
-                        Component.text("You must choose a house!")
-                                .color(NamedTextColor.RED)
+                        Component.text("You must choose a house!").color(NamedTextColor.RED)
                 );
+
                 SpellCraftPlugin.getAdventure().player(player).sendMessage(
-                        Component.text("Use /house choose <name>")
-                                .color(NamedTextColor.YELLOW)
+                        Component.text("Use /house choose <name>").color(NamedTextColor.YELLOW)
                 );
+
             }
-        }, 40L);
+
+        },40L);
+
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+
         handleLeave(event.getPlayer());
+
     }
 
     @EventHandler
     public void onPlayerKick(PlayerKickEvent event) {
+
         handleLeave(event.getPlayer());
+
     }
 
     private void handleLeave(Player player) {
+
         SpellCaster caster = casterManager.getCasterIfLoaded(player.getUniqueId());
+
         if (caster != null) {
+
             plugin.getPlayerDataManager().save(caster);
+
             plugin.getLogger().info("SpellCaster for " + player.getName() + " saved!");
+
             casterManager.removeCaster(player.getUniqueId());
+
         }
+
+    }
+
+    @EventHandler
+    public void onPlayerItemChange(PlayerItemHeldEvent event) {
+
+        currentplayerslot = event.getNewSlot() + 1;
+
     }
 
     @EventHandler
     public void onHotbarSwap(PlayerItemHeldEvent event) {
+
         Player player = event.getPlayer();
+
         SpellCaster caster = casterManager.getCasterIfLoaded(player.getUniqueId());
 
         if (caster == null) {
+
             SpellCraftPlugin.getAdventure().player(player).sendActionBar(Component.empty());
             return;
+
         }
 
         Spell spell = caster.getSpellAtSlot(event.getNewSlot());
+
         if (spell == null) {
+
             SpellCraftPlugin.getAdventure().player(player).sendActionBar(Component.empty());
             return;
+
         }
 
         var element = spell.getElement();
         var color = element != null ? element.getColor() : NamedTextColor.WHITE;
 
-        SpellCraftPlugin.getAdventure().player(player).sendActionBar(Component.text(spell.getName()).color(color));
+        long remaining = caster.getRemainingCooldown(spell);
+
+        String text;
+
+        if (remaining > 0) {
+
+            double seconds = remaining / 1000.0;
+            text = spell.getName() + " - " + String.format("%.1fs", seconds);
+
+        } else {
+
+            text = spell.getName();
+
+        }
+
+        SpellCraftPlugin.getAdventure().player(player)
+                .sendActionBar(Component.text(text).color(color));
+
     }
 
     @EventHandler
     public void onSpellDamage(SpellPlayerDamageEvent event) {
+
         var target = event.getTarget();
         var caster = event.getCaster();
 
-        double finalHealth = target.getHealth() - event.getDamage();
+        double finalHealth = target.getHealth()-event.getDamage();
+
         if (finalHealth > 0) return;
 
         Component message = Component.text()
-                .append(Component.text(target.getName(), NamedTextColor.RED))
-                .append(Component.text(" was slain by ", NamedTextColor.GRAY))
-                .append(Component.text(caster.getName(), NamedTextColor.GOLD))
-                .append(Component.text("'s ", NamedTextColor.GRAY))
-                .append(Component.text(
-                        event.getSpellName(),
-                        event.getElement().getColor()
-                ))
+                .append(Component.text(target.getName(),NamedTextColor.RED))
+                .append(Component.text(" was slain by ",NamedTextColor.GRAY))
+                .append(Component.text(caster.getName(),NamedTextColor.GOLD))
+                .append(Component.text("'s ",NamedTextColor.GRAY))
+                .append(Component.text(event.getSpellName(),event.getElement().getColor()))
                 .build();
 
         SpellCraftPlugin.getAdventure().server(Bukkit.getServer().getName()).sendMessage(message);
+
         SpellCraftPlugin.getAdventure().sender(Bukkit.getConsoleSender()).sendMessage(message);
+
     }
+
 }
