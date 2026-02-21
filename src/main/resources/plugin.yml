@@ -3,70 +3,156 @@ version: '${project.version}'
 main: com.spellcraft.SpellCraftPlugin
 api-version: '1.20'
 folia-supported: true
-soft-depend: [WorldGuard, GriefPrevention]
+
 author: Hihelloy
 description: A comprehensive magic based spell system for Minecraft
+
+soft-depend:
+  - WorldGuard
+  - GriefPrevention
 
 libraries:
   - net.kyori:adventure-api:4.26.1
   - net.kyori:adventure-platform-bukkit:4.4.1
 
+
 commands:
+
   spell:
     description: Main SpellCraft command
     usage: /<command> <subcommand>
-    aliases: [sc,spells,s]
+    aliases: [sc, spells, s]
     permission: spellcraft.command.spell
+    permission-message: You do not have permission.
 
   spellbook:
     description: SpellBook management command
     usage: /<command> <create|give> [player] [spell]
     permission: spellcraft.command.spellbook
+    permission-message: You do not have permission.
 
   spellbind:
     description: Bind a spell to a slot
     usage: /<command> <slot> <spell>
     permission: spellcraft.command.spellbind
+    permission-message: You do not have permission.
 
   house:
     description: Choose your magical house
     usage: /<command> <choose> [house]
     permission: spellcraft.command.house
+    permission-message: You do not have permission.
+
+
 
 permissions:
 
+  #
+  # ROOT
+  #
+  spellcraft.*:
+    description: Access to everything in SpellCraft
+    default: op
+    children:
+      spellcraft.command.*: true
+      spellcraft.spell.*: true
+      spellcraft.spellbook.*: true
+      spellcraft.element.*: true
+      spellcraft.house.*: true
+      spellcraft.admin.*: true
+
+
+
+  #
+  # COMMANDS (Players allowed)
+  #
+  spellcraft.command.*:
+    description: Access to player commands
+    default: true
+    children:
+      spellcraft.command.spell: true
+      spellcraft.command.spellbind: true
+      spellcraft.command.house: true
+
   spellcraft.command.spell:
+    description: Use /spell
     default: true
 
   spellcraft.command.spellbind:
+    description: Use /spellbind
     default: true
 
   spellcraft.command.house:
+    description: Use /house
     default: true
 
   spellcraft.command.spellbook:
+    description: Admin spellbook command
     default: op
 
-  spellcraft.spell.cast:
-    default: true
 
+
+  #
+  # SPELL CASTING (OP by default, LuckPerms configurable)
+  #
   spellcraft.spell.*:
+    description: Access to all spells
+    default: op
+    children:
+      spellcraft.spell.cast: true
+
+  spellcraft.spell.cast:
+    description: Allows casting spells
     default: true
 
-  spellcraft.element.*:
-    default: true
 
-  spellcraft.house.*:
-    default: true
+
+  #
+  # SPELLBOOKS
+  #
+  spellcraft.spellbook.*:
+    description: All spellbook permissions
+    default: op
+    children:
+      spellcraft.spellbook.use: true
+      spellcraft.spellbook.craft: true
+      spellcraft.spellbook.give: true
 
   spellcraft.spellbook.use:
+    description: Use spellbooks
     default: true
 
   spellcraft.spellbook.craft:
+    description: Craft spellbooks
     default: true
 
   spellcraft.spellbook.give:
+    description: Give spellbooks
     default: op
 
+
+
+  #
+  # ELEMENTS (OP by default)
+  #
+  spellcraft.element.*:
+    description: Access to all elements
+    default: op
+
+
+
+  #
+  # HOUSES (OP by default)
+  #
+  spellcraft.house.*:
+    description: Access to all houses
+    default: op
+
+
+
+  #
+  # ADMIN
+  #
   spellcraft.admin.*:
+    description: Admin permissions
     default: op
